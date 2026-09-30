@@ -186,3 +186,25 @@ shell's own command line.**
 - **Also:** `kill -0 <pid>` is not a liveness test across users. On another user's process it
   fails with EPERM, which a shell test reports exactly like "no such process". Use `/proc/<pid>`
   presence or `pgrep` instead.
+
+## Decide what unattended upgrades may restart
+
+**Unattended package upgrades on a server should be a decision you wrote down, not the
+distribution's default: an upgrade that restarts the container runtime at an odd hour is a
+silent outage.**
+
+- **The failure shape (2026-09):** a scheduled upgrade replaces the container runtime overnight
+  and restarts it, and every container on the host goes down with it. Nothing alerts, because
+  nothing failed: the upgrade exits 0, and whether each container comes back depends on its
+  restart policy. Written as a pattern to check for, not a measured incident on a named
+  version. Distributions such as Ubuntu enable `unattended-upgrades` by default for
+  security updates, and a runtime or kernel package can arrive through that channel.
+- **Decide per host:** security updates only, at a time you would notice; packages that restart
+  shared services (the container runtime, the tailnet daemon, the database) held back and
+  upgraded by hand; and whether a pending kernel may reboot the machine on its own.
+- **Check:** `systemctl list-timers 'apt-daily*'` shows when upgrades run;
+  `apt-config dump | grep -i unattended` shows what is enabled, the allowed origins, the
+  package blocklist and `Automatic-Reboot`; `grep -h ' upgrade ' /var/log/dpkg.log*` shows what
+  was actually upgraded and when. Compare those times with container restarts
+  (`docker ps --format '{{.Names}} {{.Status}}'`, or `docker inspect` for `StartedAt`). An
+  uptime that resets at the same hour as an upgrade is this trap.

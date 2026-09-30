@@ -28,6 +28,7 @@ to check. Rules that live in a sibling repo are linked there.
 - [A process can survive its own death](systemd/README.md#a-process-can-survive-its-own-death)
 - [A prompt on discarded stdout blocks silently](systemd/README.md#a-prompt-on-discarded-stdout-blocks-silently)
 - [Find a process without matching yourself](systemd/README.md#find-a-process-without-matching-yourself)
+- [Decide what unattended upgrades may restart](systemd/README.md#decide-what-unattended-upgrades-may-restart)
 
 ## [Networking](networking/README.md)
 
@@ -40,6 +41,7 @@ to check. Rules that live in a sibling repo are linked there.
 - [Test DNS by asking a resolver directly](networking/README.md#test-dns-by-asking-a-resolver-directly)
 - [A tailnet-first resolver fails new connections only](networking/README.md#a-tailnet-first-resolver-fails-new-connections-only)
 - [Losing the tailnet takes tailnet-only services with it](networking/README.md#losing-the-tailnet-takes-tailnet-only-services-with-it)
+- [No third-party LLM routers between agents and providers](networking/README.md#no-third-party-llm-routers-between-agents-and-providers)
 
 ## [Sync and backup](sync-and-backup/README.md)
 

@@ -159,3 +159,22 @@ breaks every new connection while established ones survive.**
   checks stayed green.
 - **Check:** list what your alerting depends on and ask which of it survives the tailnet being
   down. The alert that says "the tailnet is down" cannot travel over the tailnet.
+
+## No third-party LLM routers between agents and providers
+
+**An AI agent on a home server talks to its model provider's own endpoint, or to a gateway you
+run yourself, never through a third-party router, reseller or "cheaper API" proxy.**
+
+- **Source (2026-04):** a measurement study of 428 LLM routers, 28 paid and 400 free, found 9
+  injecting malicious code into responses and 17 using canary cloud credentials the researchers
+  had planted ([arXiv 2604.08407](https://arxiv.org/abs/2604.08407), "Your Agent Is Mine").
+  Every hop sees prompts, tool output and keys in plaintext, and it writes the response the agent
+  acts on, so it can add tool calls the model never made. The agent-side rule and its reasoning
+  are in [hsi-operator's harness page](https://github.com/rivendale/hsi-operator/blob/main/docs/building-a-harness.md);
+  this entry is the network side.
+- **Check:** in the environment the service actually runs in (for a user unit,
+  `systemctl --user show-environment` plus the unit's own `Environment=` and `EnvironmentFile=`
+  lines), look for base-URL and proxy overrides: `env | grep -iE 'base_url|api_base|endpoint|proxy'`,
+  then the same words across the agent CLIs' config files and any `.env` beside them. Every hit
+  should be the provider's own domain or a gateway you can name. A new outbound domain in your
+  DNS or firewall logs for an agent host is the same question asked from the network.

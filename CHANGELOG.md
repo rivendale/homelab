@@ -9,6 +9,15 @@ request. Dates are the day the work landed.
 
 ## Unreleased
 
+- **An agent service could reach its model through a third-party router, and a scheduled
+  package upgrade could restart the container runtime overnight with nothing alerting.** A
+  published study caught 26 of 428 LLM routers injecting code or using planted credentials;
+  `networking/` now says to talk only to the provider's endpoint or your own gateway, with a
+  check for base-URL and proxy overrides in the service's real environment, and links the
+  agent-side rule in hsi-operator. `systemd/` gains deciding what unattended upgrades may
+  restart, with checks that line upgrade times up against container restarts. Both are indexed
+  in `traps.md`.
+
 - **About forty lessons from two months of running a small home lab sat in one operator's
   private notes, where nobody else could use them.** Each came from a real failure: every
   socket in WSL dying because an unrelated Wi-Fi adapter flapped, a distro torn down fifteen

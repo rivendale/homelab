@@ -9,6 +9,12 @@ request. Dates are the day the work landed.
 
 ## Unreleased
 
+- **An agent service could reach its model through a third-party router.** A published study
+  of 428 LLM routers found 9 injecting malicious code and 17 touching planted canary
+  credentials; `networking/` now says to talk only to the provider's endpoint or your own
+  gateway, with a names-only check for base-URL and proxy overrides in the service's real
+  environment, and links the agent-side rule in hsi-operator. Indexed in `traps.md`.
+
 - **About forty lessons from two months of running a small home lab sat in one operator's
   private notes, where nobody else could use them.** Each came from a real failure: every
   socket in WSL dying because an unrelated Wi-Fi adapter flapped, a distro torn down fifteen

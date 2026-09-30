@@ -34,7 +34,7 @@ to check. Rules that live in a sibling repo are linked there.
 - [A Tailscale tag replaces the user identity](networking/README.md#a-tailscale-tag-replaces-the-user-identity)
 - [Disable key expiry on servers you own](networking/README.md#disable-key-expiry-on-servers-you-own)
 - [Tailnet SSH and sshd are two doors](networking/README.md#tailnet-ssh-and-sshd-are-two-doors)
-- [A reservation goes inside the pool and a static outside](networking/README.md#a-reservation-goes-inside-the-pool-and-a-static-outside)
+- [Some consumer gateways only accept a reservation inside the DHCP pool](networking/README.md#some-consumer-gateways-only-accept-a-reservation-inside-the-dhcp-pool)
 - [A DHCP lease is a fuse](networking/README.md#a-dhcp-lease-is-a-fuse)
 - [The tailnet name is the identity](networking/README.md#the-tailnet-name-is-the-identity)
 - [Test DNS by asking a resolver directly](networking/README.md#test-dns-by-asking-a-resolver-directly)

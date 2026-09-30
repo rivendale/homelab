@@ -31,7 +31,7 @@ a local delete or edit is never versioned.**
 time with no offset; the file's mtime is the original document's date.**
 
 - **Failure (2026-09):** a recoverability metric reported the oldest version as 6,300 days old.
-  It was a seventeen-year-old document; Syncthing preserves the original mtime. The fix then
+  It was an old document; Syncthing preserves the original mtime. The fix then
   parsed the suffix as UTC and reported versions five hours old that were 61 minutes old, off by
   exactly the local offset. Both errors leaned in the reassuring direction.
 - **Check:** parse the suffix, and apply the timezone of the host that holds the version.

@@ -1,8 +1,8 @@
 # homelab
 
-Practice from running a small home lab: a Windows desktop with WSL2, a small Linux server
-running Docker, a couple of laptops, all joined on a Tailscale tailnet, with systemd user
-services, Prometheus alerting, push notifications and file sync between the machines.
+Practice from running a small home lab: a Windows desktop with WSL2, a small Linux server,
+laptops, on one tailnet, with systemd user services, Prometheus alerting, push notifications
+and file sync between the machines.
 
 **Every entry names the failure behind it.** A rule without the failure that produced it
 cannot tell you whether it still applies to your setup; the failure can. Each entry gives

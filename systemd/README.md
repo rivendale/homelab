@@ -27,6 +27,8 @@ is not active returns immediately.**
   `Result=success` read at that moment belonged to the previous run.
 - **Check:** wait on `systemctl --user show -p ActiveState <unit>` reaching `inactive` or
   `failed`, then read `Result` and `ExecMainStatus`.
+- **`systemd-run -p Type=oneshot` blocks until the unit finishes** unless you background it or
+  pass `--no-block`, so a poll started after it returns sees nothing left to wait for.
 
 ## The user manager has its own PATH
 

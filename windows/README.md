@@ -52,8 +52,7 @@ decrypting the files alone makes the problem come back.**
 
 - **Failure (2026-09):** encrypted files kept reappearing in a synced folder after they had been
   decrypted twice. Two of the encrypted entries were directories. The real source was further up:
-  the user's Desktop folder and 329 directories under it, including the downloads folder, carried
-  the encrypt-on-create bit. A download was born encrypted, and a move within the same volume keeps
+  a user profile folder and the directories under it carried the encrypt-on-create bit. A download was born encrypted, and a move within the same volume keeps
   the attribute rather than taking the destination's, so the sync folder correctly reported "new
   files will not be encrypted" while encrypted files kept arriving in it.
 - **Check:** ask which directory the file was created in, not where it ended up. Survey

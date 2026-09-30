@@ -62,8 +62,8 @@ check proven only at home has been proven in the one place it cannot fail.**
 and is not exempt from the OOM killer, unlike PID 1 on bare metal.**
 
 - **Failure (2026-08):** a memory cap on the cgroup holding PID 1 was dismissed as safe
-  because "the kernel never kills init". True on both bare-metal servers checked, false on the
-  one WSL host it was applied to. That cgroup (`init.scope`) also holds WSL's init shims and the
+  because "the kernel never kills init". That holds on bare metal and was false on the WSL host
+  it was applied to. That cgroup (`init.scope`) also holds WSL's init shims and the
   9P server that backs `/mnt/c`.
 - **Check:** `readlink /proc/self/ns/pid`. The initial namespace is `pid:[4026531836]`; any
   other number means nested. Read `/proc/self`, not `/proc/1`: as a normal user

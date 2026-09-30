@@ -43,6 +43,23 @@ installed there fails at start.**
   `OnFailure=`, confirm the target exists with `systemctl --user cat <template>@.service`, and
   make it fire once on purpose.
 
+## Install a user CLI under its own prefix, not the global one
+
+**`npm install -g` writes to the global prefix, which on a distribution's Node is a root-owned
+directory; install each user tool under its own prefix instead:
+`npm install --prefix ~/.local/share/<tool> <package>@<version>`.**
+
+- **Failure (2026-09):** on npm 10.9 with Node 22 from the distribution, `npm config get prefix`
+  read `/usr`, so a global install needed root, and a tool installed with `sudo` lands where every
+  user and every service shares it. A per-tool prefix keeps each tool and its dependency tree in
+  one directory you own, pinned to the version you chose, and removing it is one `rm -r`.
+- **Check:** `npm config get prefix` before any `-g` install. After a per-tool install, the binary
+  is `~/.local/share/<tool>/node_modules/.bin/<cmd>`; symlink that into `~/.local/bin` (the
+  symlink keeps the package's sibling files reachable; a copy of the package's entry script does
+  not), and give
+  any unit that calls it the `PATH` above. Run `<cmd> --version` as the unit, not only in your
+  shell.
+
 ## MemoryCurrent counts page cache
 
 **A cgroup's `MemoryCurrent` includes reclaimable page cache, so comparing it with
@@ -113,6 +130,16 @@ a busy machine.**
 - **Check:** `cat /proc/<pid>/cgroup` must name the transient unit, not the service that
   launched it. Poll `systemctl --user is-active <name>` for completion, and keep the job's
   resume state on a durable path, not `/tmp`.
+- **Cap heavy installs and long trials in the same command.** A package install that compiles or
+  downloads models, or a trial of a new tool, is the job most likely to eat the host:
+  `systemd-run --user --collect --unit=<name> -p MemoryMax=4G -p MemorySwapMax=0 <command>`.
+  `MemoryMax` alone lets the job spill into swap instead of being killed (caught in review,
+  2026-09), and a host that pages hard is down in all but name (see
+  [high load with an idle CPU](#high-load-with-an-idle-cpu-means-paging)). Size the cap under
+  whatever the parent slice allows ([the cap that binds may belong to a parent](#the-cap-that-binds-may-belong-to-a-parent)).
+  Check the cap took: `systemctl --user show -p MemoryMax -p MemorySwapMax <name>`. A missing
+  value here means the memory controller is not delegated to the user manager, and the limit is
+  silently absent even though `systemd-run` succeeded.
 - **For AI coding agents:** whether a harness reaps its own background tasks at the end of a
   turn depends on the harness and its version. The measured details are in
   [hsi-operator docs/tools.md](https://github.com/rivendale/hsi-operator/blob/main/docs/tools.md).

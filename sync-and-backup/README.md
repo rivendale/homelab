@@ -112,6 +112,21 @@ account fails to scan, and a folder it cannot write still reads as connected to 
 - **If the grant is right and reads still fail,** check for EFS encryption:
   [an ACL grant cannot open an encrypted file](../windows/README.md#an-acl-grant-cannot-open-an-encrypted-file).
 
+## Exclude a tool's cache before a timer commits the tree
+
+**If a timer commits and pushes a git working tree, exclude any directory a new tool writes
+there before the tool first runs, or the timer publishes it.**
+
+- **Failure (2026-09):** a local search tool writes its index into the indexed project root, in a
+  repository that a timer commits and pushes every 15 minutes. The index is a copy of everything it
+  read. It was excluded before the first index, so it never shipped; without that, the next timer
+  run would have committed it. The same holds for any tool that drops a cache, a virtual
+  environment or a lock file into the working tree.
+- **Check:** add the directory to `.git/info/exclude` (local to that clone, needs no commit, so it
+  does not wait on review of a `.gitignore` change). Confirm with `git check-ignore -v <dir>`,
+  then run the tool once and read `git status --short` before the timer fires. An empty status
+  with the directory present on disk is the pass.
+
 ## A sweep needs a positive control
 
 **A search that finds zero of something prints the same as a search that walked nothing; print

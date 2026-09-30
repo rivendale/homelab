@@ -9,6 +9,12 @@ request. Dates are the day the work landed.
 
 ## Unreleased
 
+- **A tool trial could take the host down, a global npm install needed root, and a timer that
+  commits a working tree would have published a new tool's index.** `systemd/` gains capping
+  heavy installs and trials with `MemoryMax` plus `MemorySwapMax=0` (under the existing long-jobs
+  entry) and installing user CLIs under a per-tool npm prefix; `sync-and-backup/` gains excluding
+  a tool's cache with `.git/info/exclude` before an auto-commit timer runs. Indexed in `traps.md`.
+
 - **An agent service could reach its model through a third-party router.** A published study
   of 428 LLM routers found 9 injecting malicious code and 17 touching planted canary
   credentials; `networking/` now says to talk only to the provider's endpoint or your own

@@ -55,7 +55,8 @@ directory; install each user tool under its own prefix instead:
   one directory you own, pinned to the version you chose, and removing it is one `rm -r`.
 - **Check:** `npm config get prefix` before any `-g` install. After a per-tool install, the binary
   is `~/.local/share/<tool>/node_modules/.bin/<cmd>`; symlink that into `~/.local/bin` (the
-  symlink keeps the package's sibling files reachable, a copied entry script does not), and give
+  symlink keeps the package's sibling files reachable; a copy of the package's entry script does
+  not), and give
   any unit that calls it the `PATH` above. Run `<cmd> --version` as the unit, not only in your
   shell.
 
@@ -136,7 +137,9 @@ a busy machine.**
   2026-09), and a host that pages hard is down in all but name (see
   [high load with an idle CPU](#high-load-with-an-idle-cpu-means-paging)). Size the cap under
   whatever the parent slice allows ([the cap that binds may belong to a parent](#the-cap-that-binds-may-belong-to-a-parent)).
-  Check the cap took: `systemctl --user show -p MemoryMax -p MemorySwapMax <name>`.
+  Check the cap took: `systemctl --user show -p MemoryMax -p MemorySwapMax <name>`. A missing
+  value here means the memory controller is not delegated to the user manager, and the limit is
+  silently absent even though `systemd-run` succeeded.
 - **For AI coding agents:** whether a harness reaps its own background tasks at the end of a
   turn depends on the harness and its version. The measured details are in
   [hsi-operator docs/tools.md](https://github.com/rivendale/hsi-operator/blob/main/docs/tools.md).

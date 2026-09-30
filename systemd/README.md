@@ -92,7 +92,7 @@ above it, and raising the unit's own cap changes nothing.**
 **A load average of 60 with the CPU mostly idle is processes blocked on I/O, usually swap, not
 a busy machine.**
 
-- **Failure (2026-09):** a 16 GB server read load 67 with 59% idle CPU. Fourteen processes sat
+- **Failure (2026-09):** a small server read load 67 with 59% idle CPU. Fourteen processes sat
   in uninterruptible sleep, `vmstat` showed thousands of pages swapped in and out per second,
   and one service's cgroup held 44 processes from a parallel test run. The service's network
   heartbeats were the first thing to fail.

@@ -28,7 +28,6 @@ to check. Rules that live in a sibling repo are linked there.
 - [A process can survive its own death](systemd/README.md#a-process-can-survive-its-own-death)
 - [A prompt on discarded stdout blocks silently](systemd/README.md#a-prompt-on-discarded-stdout-blocks-silently)
 - [Find a process without matching yourself](systemd/README.md#find-a-process-without-matching-yourself)
-- [Decide what unattended upgrades may restart](systemd/README.md#decide-what-unattended-upgrades-may-restart)
 
 ## [Networking](networking/README.md)
 

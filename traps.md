@@ -18,6 +18,7 @@ to check. Rules that live in a sibling repo are linked there.
 - [Ask the bus the unit actually lives on](systemd/README.md#ask-the-bus-the-unit-actually-lives-on)
 - [A oneshot reads activating while it runs](systemd/README.md#a-oneshot-reads-activating-while-it-runs)
 - [The user manager has its own PATH](systemd/README.md#the-user-manager-has-its-own-path)
+- [Install a user CLI under its own prefix, not the global one](systemd/README.md#install-a-user-cli-under-its-own-prefix-not-the-global-one)
 - [MemoryCurrent counts page cache](systemd/README.md#memorycurrent-counts-page-cache)
 - [MemoryHigh turns a crash into a hang](systemd/README.md#memoryhigh-turns-a-crash-into-a-hang)
 - [The cap that binds may belong to a parent](systemd/README.md#the-cap-that-binds-may-belong-to-a-parent)
@@ -51,6 +52,7 @@ to check. Rules that live in a sibling repo are linked there.
 - [A whitespace versions path blocks every replace](sync-and-backup/README.md#a-whitespace-versions-path-blocks-every-replace)
 - [The readable config may not be the live one](sync-and-backup/README.md#the-readable-config-may-not-be-the-live-one)
 - [A Windows service account needs a grant on every folder](sync-and-backup/README.md#a-windows-service-account-needs-a-grant-on-every-folder)
+- [Exclude a tool's cache before a timer commits the tree](sync-and-backup/README.md#exclude-a-tools-cache-before-a-timer-commits-the-tree)
 - [A sweep needs a positive control](sync-and-backup/README.md#a-sweep-needs-a-positive-control)
 - [Keep the evidence that authorizes a delete](sync-and-backup/README.md#keep-the-evidence-that-authorizes-a-delete)
 

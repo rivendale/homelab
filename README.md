@@ -1,5 +1,9 @@
 # homelab
 
+> Part of a set of public repos maintained separately. Start at
+> [hsi-operator](https://github.com/rivendale/hsi-operator): it says what each one is for and
+> when to read it.
+
 Practice from running a small home lab: a Windows desktop with WSL2, a small Linux server,
 laptops, on one tailnet, with systemd user services, Prometheus alerting, push notifications
 and file sync between the machines.

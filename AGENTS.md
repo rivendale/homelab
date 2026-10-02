@@ -1,5 +1,9 @@
 # AGENTS.md
 
+> Part of a set of public repos maintained separately. Start at
+> [hsi-operator](https://github.com/rivendale/hsi-operator): it says what each one is for and
+> when to read it.
+
 Working agreement for anyone, human or agent, changing this repo. It is the one instruction
 file; there is no second name for it, because two instruction files drift and the one a tool
 loads automatically wins the contradiction.

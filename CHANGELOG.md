@@ -9,6 +9,12 @@ request. Dates are the day the work landed.
 
 ## Unreleased
 
+- **A reader who landed here found the sibling repos only at the bottom of the README, and
+  nothing said which of them to start from.** `README.md` and `AGENTS.md` now say under the
+  title that this is one of a set of repos maintained separately and that
+  [hsi-operator](https://github.com/rivendale/hsi-operator) is where to start. The hub's CI
+  checks that this pointer stays within the first 12 lines.
+
 - **A tool trial could take the host down, a global npm install needed root, and a timer that
   commits a working tree would have published a new tool's index.** `systemd/` gains capping
   heavy installs and trials with `MemoryMax` plus `MemorySwapMax=0` (under the existing long-jobs

@@ -6,6 +6,7 @@ to check. Rules that live in a sibling repo are linked there.
 ## [WSL2](wsl/README.md)
 
 - [Mirrored networking destroys every socket at once](wsl/README.md#mirrored-networking-destroys-every-socket-at-once)
+- [A closed port on 127.0.0.1 hangs instead of refusing](wsl/README.md#a-closed-port-on-127001-hangs-instead-of-refusing)
 - [WSL resolves names the way Windows does](wsl/README.md#wsl-resolves-names-the-way-windows-does)
 - [A check that passes from home can fail from CI](wsl/README.md#a-check-that-passes-from-home-can-fail-from-ci)
 - [PID 1 inside WSL can be killed by the OOM killer](wsl/README.md#pid-1-inside-wsl-can-be-killed-by-the-oom-killer)

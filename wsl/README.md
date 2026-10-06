@@ -30,15 +30,18 @@ established TCP socket in WSL, including sockets on a different, healthy adapter
 ## A closed port on 127.0.0.1 hangs instead of refusing
 
 **With `networkingMode=mirrored` and `firewall=true`, a TCP connect to a closed port on
-`127.0.0.1` is silently dropped, so it waits out the full timeout. The same connect to `::1` is
+`127.0.0.1` gets no reply, so it waits out the full timeout. The same connect to `::1` is
 refused at once.**
 
 - **Measured (2026-10-06):** a connect to `127.0.0.1:9` and `127.0.0.1:1` timed out at 25 s and 5 s
-  (the timeout set); the same to `[::1]:9` raised "connection refused" in 0.0 s. A test that pointed a
+  (two runs, each at its configured timeout); the same to `[::1]:9` raised "connection refused" in 0.0 s. A test that pointed a
   client at a closed local port to prove "unreachable is an error" took 20 s per run, a quarter of
   its whole suite's time, because the client waited out its own 20 s timeout.
-- **Cause, not yet separated:** mirrored mode and the Hyper-V firewall were both on. Telling them apart
-  needs a WSL restart with one of them off; until then, assume either can cause it.
+- **Cause, narrowed but not separated:** mirrored mode and the Hyper-V firewall were both on, on two
+  machines with the same result. The same four connects made from the Windows host are refused
+  in about 2 s, so the drop is on the WSL side of a mirrored-mode IPv4 loopback connect. Telling
+  mirrored mode from the firewall needs a WSL restart with one of them off; until then, assume
+  either can cause it.
 - **Do instead:** to test "the service is unreachable", point the client at a listener that accepts
   and closes at once, or at `::1`, rather than at a closed IPv4 port. Give every client a short
   connect timeout. Do not read a slow failure as a hung tool: try the same connect against `::1`

@@ -16,7 +16,7 @@ line; the upgrade may have commented it out, and nothing reports it.**
   succeeded and reported each package as "already the newest version", because apt no
   longer knew a newer one existed. It surfaced only when a security release for one of
   them did not arrive.
-- **Measured on:** Ubuntu 26.04 after `do-release-upgrade` from 24.04, observed 2026-10.
+- **Measured on:** Ubuntu 26.04 after `do-release-upgrade` from 24.04, observed 2026-10-21.
 - **Check:** `apt-cache policy <package>` lists where a package can come from. A version
   table that shows only `/var/lib/dpkg/status` means no source offers it: the package can
   never update. Also run `ls /etc/apt/sources.list.d/` and look for `.disabled` files or
@@ -33,7 +33,10 @@ updates are not phased.**
 - **What it is:** Ubuntu releases most non-security updates to a growing share of machines
   over several days and halts the rollout if problems appear. `apt upgrade` reports the
   rest as "Not upgrading yet due to phasing".
-- **Measured on:** Ubuntu 26.04, observed 2026-10.
+- **Measured on:** Ubuntu 26.04, apt 3.2.0, observed 2026-10-21.
+- **Source:** Ubuntu Server documentation, "About apt upgrade and phased updates"
+  (https://ubuntu.com/server/docs/explanation/software/about-apt-upgrade-and-phased-updates/):
+  "security updates are never phased".
 - **Do:** wait. There is an option that skips phasing; on a server, letting other machines
   find a bad update first is the point of it.
-- **Check:** `apt-cache policy <package>` shows a phased candidate with its percentage.
+- **Check:** `apt policy <package>` shows the candidate marked `(phased NN%)`.

@@ -9,6 +9,10 @@ request. Dates are the day the work landed.
 
 ## Unreleased
 
+- **A release upgrade had silently commented out every third-party apt source, so four
+  packages stopped updating while `apt` reported each as the newest version.** New section
+  [Linux packages](packages/README.md) with the check (`apt-cache policy` showing only
+  `/var/lib/dpkg/status`), plus a note that phased holds are a staged rollout, not a fault.
 - **A reader who landed here found the sibling repos only at the bottom of the README, and
   nothing said which of them to start from.** `README.md` and `AGENTS.md` now say under the
   title that this is one of a set of repos maintained separately and that

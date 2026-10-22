@@ -66,6 +66,11 @@ to check. Rules that live in a sibling repo are linked there.
 - [One sample of a volatile signal is not evidence](alerting/README.md#one-sample-of-a-volatile-signal-is-not-evidence)
 - [A textfile metric can be stale](alerting/README.md#a-textfile-metric-can-be-stale)
 
+## [Linux packages](packages/README.md)
+
+- [A release upgrade can silently switch off every third-party source](packages/README.md#a-release-upgrade-can-silently-switch-off-every-third-party-source)
+- ["Not upgrading yet due to phasing" is working as intended](packages/README.md#not-upgrading-yet-due-to-phasing-is-working-as-intended)
+
 ## [Windows](windows/README.md)
 
 - [Two registry keys do not prove no reboot is pending](windows/README.md#two-registry-keys-do-not-prove-no-reboot-is-pending)

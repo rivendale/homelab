@@ -14,12 +14,13 @@ with `docker exec <container> kill -HUP 1` instead.**
   rule reload, `docker kill --signal=HUP <container>`. The signal only reloads the
   configuration and the container keeps running, so nothing looks wrong until the next boot.
   Alerting was dark until someone started it by hand.
-- **Measured on:** Docker Engine 29.9.2 with `live-restore` on, 2026-10. Any signal sent
-  through the kill API sets the container's `HasBeenManuallyStopped` flag, unless the daemon
-  itself is shutting down, and `unless-stopped` skips a container that carries it. `always`
-  ignores the flag. `docker inspect` does not show it. The daemon keeps it in the container's
-  `config.v2.json` under its data root, which only root can read, and `docker start` clears it.
-  That file location comes from the engine source and was not checked on disk.
+- **Measured on:** Docker Engine 29.9.2 with `live-restore` on, 2026-10. Measured with the check
+  below: a signal sent with `docker kill` keeps an `unless-stopped` container down after it
+  exits, `always` restarts it anyway, and a later `docker start` clears the effect, so the
+  container restarts normally after its next exit. From the engine source and not measured
+  here: the effect is the container's `HasBeenManuallyStopped` flag, it is not set while the
+  daemon itself is shutting down, and it is kept in the container's `config.v2.json` under the
+  daemon's data root, which only root can read. Measured: `docker inspect` does not show it.
 - **Check:** the flag also blocks restarts while the daemon is running, so you can test it
   without a reboot. Each container below ignores `HUP` and exits after twenty seconds.
   `--stop-signal TERM` matters: when the signal you send is the container's stop signal, which
@@ -54,5 +55,15 @@ with `docker exec <container> kill -HUP 1` instead.**
   `docker exec <container> kill -<SIGNAL> 1`. That form needs a `kill` binary in the image. A
   call that is meant to stop the container should stay as it is, because the `exec` form lets
   `unless-stopped` start it again. A server with an HTTP reload endpoint, such as Prometheus
-  with `--web.enable-lifecycle`, can use that instead. After any reboot, list containers that
-  should be up and are not: `docker ps -a --filter status=exited`.
+  with `--web.enable-lifecycle`, can use that instead. After any reboot, list exited containers
+  whose policy says they should be running:
+
+  ```sh
+  docker ps -a --filter status=exited -q \
+    | xargs -r docker inspect --format '{{.Name}} {{.HostConfig.RestartPolicy.Name}}' \
+    | awk '$2 == "unless-stopped" || $2 == "always"'
+  ```
+
+  Measured: it lists an `unless-stopped` container kept down this way, and leaves out a
+  one-shot container with no restart policy that `docker ps -a --filter status=exited` alone
+  would include.

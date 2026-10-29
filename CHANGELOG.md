@@ -11,7 +11,7 @@ request. Dates are the day the work landed.
 
 - **A metrics server stayed down after two reboots because its documented config reload,
   `docker kill --signal=HUP`, had marked it stopped by hand, and `unless-stopped` skips such a
-  container.** New section [Docker](docker/README.md) with a three-container check you can run
+  container.** New section [Docker](docker/README.md) with a four-container check you can run
   without rebooting, and the `docker exec <container> kill -HUP 1` reload that avoids it.
 - **A release upgrade had silently commented out every third-party apt source, so four
   packages stopped updating while `apt` reported each as the newest version.** New section

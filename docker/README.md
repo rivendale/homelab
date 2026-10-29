@@ -20,15 +20,23 @@ with `docker exec <container> kill -HUP 1` instead.**
   container restarts normally after its next exit. From the engine source and not measured
   here: the effect is the container's `HasBeenManuallyStopped` flag, it is not set while the
   daemon itself is shutting down, and it is kept in the container's `config.v2.json` under the
-  daemon's data root, which only root can read. Measured: `docker inspect` does not show it.
+  daemon's data root. Measured: `docker inspect` does not show it, and on a rootful install
+  the data root (`/var/lib/docker`) is readable only by root. Rootless Docker keeps it under
+  the user's own home.
 - **Check:** the flag also blocks restarts while the daemon is running, so you can test it
   without a reboot. Each container below ignores `HUP` and exits after twenty seconds.
-  `--stop-signal TERM` matters: when the signal you send is the container's stop signal, which
-  it is for any signal on an image that declares none, the kill also cancels restarts by a
-  second route. That route would produce the same result without the flag.
+  `--stop-signal TERM` matters. When a container has no stop signal configured
+  (`docker inspect -f '{{.Config.StopSignal}}'` prints nothing, as for this image), or the
+  signal you send is its stop signal, the kill also cancels restarts by a second route. Measured:
+  with no stop signal set, a `HUP` from `docker kill` kept even an `always` container down.
+  That route would produce the same result without the flag. The check runs in a subshell
+  that removes its containers on exit, so interrupting it leaves nothing restarting.
 
   ```sh
+  (
   p="hupcheck-$$"   # unique names, so the cleanup cannot touch a container of yours
+  trap 'docker rm -f "$p-kill" "$p-always" "$p-exec" "$p-control" >/dev/null 2>&1' EXIT
+  trap 'exit 130' INT TERM
   run() { docker run -d --name "$p-$1" --restart "$2" --stop-signal TERM --network none \
     alpine:3.22 sh -c 'trap "" HUP; sleep 20; exit 1' >/dev/null; }
   run kill unless-stopped; run always always; run exec unless-stopped; run control unless-stopped
@@ -36,15 +44,15 @@ with `docker exec <container> kill -HUP 1` instead.**
     && docker exec "$p-exec" kill -HUP 1 \
     && [ "$(docker inspect -f '{{.RestartCount}}' "$p-kill" "$p-always" "$p-exec" | sort -u)" = 0 ] \
     || echo 'A signal missed the first run of its container. This run proves nothing.'
-  waitfor() { timeout 60 sh -c 'until [ "$(docker inspect -f "{{.RestartCount}}" "$@" \
-    | sort -n | head -1)" -ge 1 ]; do sleep 1; done' _ "$@"; }
+  waitfor() { for _ in $(seq 60); do [ "$(docker inspect -f '{{.RestartCount}}' "$@" \
+    | sort -n | head -1)" -ge 1 ] && return; sleep 1; done; }
   waitfor "$p-always" "$p-exec" "$p-control"
   for c in kill always exec control; do
     docker inspect "$p-$c" --format "$c {{.State.Status}} restarts={{.RestartCount}}"
   done
   docker start "$p-kill" >/dev/null && waitfor "$p-kill"
   docker inspect "$p-kill" --format 'kill after docker start: restarts={{.RestartCount}}'
-  docker rm -f "$p-kill" "$p-always" "$p-exec" "$p-control" >/dev/null
+  )
   ```
 
   Measured output: `kill` reads `exited restarts=0`. The other three read `restarting` or

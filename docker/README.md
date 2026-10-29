@@ -45,7 +45,8 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   (
   p="hupcheck-$(mktemp -u XXXXXXXX)"   # unique per run: cleanup touches only these four
   echo "prefix $p"
-  trap 'for c in kill always exec control; do docker rm -f "$p-$c" >/dev/null 2>&1; done
+  trap 'trap "" INT TERM HUP
+    for c in kill always exec control; do docker rm -f "$p-$c" >/dev/null 2>&1; done
     left=$(docker ps -aq --filter "name=^/?$p-") && [ -z "$left" ] \
       || echo "Cleanup failed: remove the $p containers." >&2' EXIT
   trap 'exit 130' INT TERM HUP

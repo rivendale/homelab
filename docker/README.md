@@ -20,9 +20,8 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   effect, so it restarts normally after its next exit. Measured separately, against a control
   container: on a container still running after such a kill, `docker start` exits 0 and clears
   nothing, while `docker restart` clears it. From the engine source and not measured
-  here: the effect is the container's `HasBeenManuallyStopped` flag, a daemon restart without a
-  reboot skips the container the same way, the flag is not set while the daemon itself is
-  shutting down, and it is kept in the container's `config.v2.json` under the
+  here: the effect is the container's `HasBeenManuallyStopped` flag, it is not set while the daemon
+  itself is shutting down, and it is kept in the container's `config.v2.json` under the
   daemon's data root. Measured: `docker inspect` does not show it, and on a rootful install
   the data root (`/var/lib/docker`) is readable only by root. Rootless Docker keeps it under
   the user's own home.

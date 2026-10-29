@@ -5,8 +5,8 @@ Containers on a small home server, started by Docker Compose with a restart poli
 ## A signal sent with docker kill stops the restart policy
 
 **`docker kill --signal=<any>` marks the container as stopped by hand, so `unless-stopped`
-does not start it again at the next daemon start or reboot; send a reload signal from inside
-with `docker exec <container> kill -HUP 1` instead.**
+does not start it again after it next exits, including at the next daemon start or reboot;
+send a reload signal from inside with `docker exec <container> kill -HUP 1` instead.**
 
 - **Failure (2026-10):** the metrics server stayed down after two reboots in a row while every
   other `unless-stopped` container came back. The daemon logged nothing for it: no start
@@ -16,8 +16,9 @@ with `docker exec <container> kill -HUP 1` instead.**
   Alerting was dark until someone started it by hand.
 - **Measured on:** Docker Engine 29.9.2 with `live-restore` on, 2026-10. Measured with the check
   below: a signal sent with `docker kill` keeps an `unless-stopped` container down after it
-  exits, `always` restarts it anyway, and a later `docker start` clears the effect, so the
-  container restarts normally after its next exit. From the engine source and not measured
+  exits, `always` restarts it anyway, and `docker start` on the stopped container clears the
+  effect, so it restarts normally after its next exit. On a container still running after such
+  a kill, `docker start` exits 0 and clears nothing, while `docker restart` clears it. From the engine source and not measured
   here: the effect is the container's `HasBeenManuallyStopped` flag, it is not set while the
   daemon itself is shutting down, and it is kept in the container's `config.v2.json` under the
   daemon's data root. Measured: `docker inspect` does not show it, and on a rootful install
@@ -32,17 +33,21 @@ with `docker exec <container> kill -HUP 1` instead.**
   stop signal set and with `--stop-signal HUP`.
   That route would produce the same result without the flag. The check runs in a subshell
   that removes its containers on exit, so an interrupt, a kill or a dropped SSH session leaves
-  nothing restarting (measured in bash). Only `kill -9` gets past the cleanup; then
-  `docker ps -aq --filter name=hupcheck- | xargs -r docker rm -f` removes what is left.
+  nothing restarting (measured in bash). The run prints its name prefix first. Only `kill -9`
+  gets past the cleanup; then `docker rm -f <prefix>-kill <prefix>-always <prefix>-exec
+  <prefix>-control` removes what is left.
 
   ```sh
   (
-  p="hupcheck-$$"   # unique names, so the cleanup cannot touch a container of yours
-  trap 'docker rm -f "$p-kill" "$p-always" "$p-exec" "$p-control" >/dev/null 2>&1' EXIT
+  p="hupcheck-$(mktemp -u XXXXXXXX)"   # unique per run: cleanup touches only these four
+  echo "prefix $p"
+  trap 'docker rm -f "$p-kill" "$p-always" "$p-exec" "$p-control" >/dev/null \
+    || echo "Cleanup failed: remove the $p containers by hand." >&2' EXIT
   trap 'exit 130' INT TERM HUP
   run() { docker run -d --name "$p-$1" --restart "$2" --stop-signal TERM --network none \
     alpine:3.22 sh -c 'trap "" HUP; sleep 20; exit 1' >/dev/null; }
-  run kill unless-stopped; run always always; run exec unless-stopped; run control unless-stopped
+  run kill unless-stopped && run always always && run exec unless-stopped \
+    && run control unless-stopped || { echo 'Could not create the test containers.' >&2; exit 1; }
   docker kill --signal=HUP "$p-kill" >/dev/null && docker kill --signal=HUP "$p-always" >/dev/null \
     && docker exec "$p-exec" kill -HUP 1 \
     && [ "$(docker inspect -f '{{.RestartCount}}' "$p-kill" "$p-always" "$p-exec" | sort -u)" = 0 ] \
@@ -64,7 +69,9 @@ with `docker exec <container> kill -HUP 1` instead.**
   `kill after docker start: restarts=1`: after a `docker start`, the container restarts
   normally again. If `control` reads `restarts=0`, the wait timed out and the run proves
   nothing. The same is true if the run printed the line saying a signal missed.
-- **Recovery:** `docker start <container>` clears the flag. Search your runbooks and scripts for
+- **Recovery:** on a stopped container, `docker start <container>` clears the flag. On one
+  still running after such a kill, `docker start` exits 0 and changes nothing; use
+  `docker restart <container>`, which clears it. Search your runbooks and scripts for
   `docker kill -s`, `docker kill --signal`, `docker container kill` and `docker compose kill`.
   Change only the calls meant to leave the container running, such as a reload, to
   `docker exec <container> kill -<SIGNAL> 1`. That form needs a `kill` binary in the image, and

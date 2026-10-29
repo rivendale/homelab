@@ -26,9 +26,10 @@ with `docker exec <container> kill -HUP 1` instead.**
 - **Check:** the flag also blocks restarts while the daemon is running, so you can test it
   without a reboot. Each container below ignores `HUP` and exits after twenty seconds.
   `--stop-signal TERM` matters. When a container has no stop signal configured
-  (`docker inspect -f '{{.Config.StopSignal}}'` prints nothing, as for this image), or the
-  signal you send is its stop signal, the kill also cancels restarts by a second route. Measured:
-  with no stop signal set, a `HUP` from `docker kill` kept even an `always` container down.
+  (`docker inspect -f '{{.Config.StopSignal}}' <container>` prints nothing, as for this image),
+  or the signal you send is its stop signal, the kill also cancels restarts by a second route.
+  Measured for both: a `HUP` from `docker kill` kept even an `always` container down, with no
+  stop signal set and with `--stop-signal HUP`.
   That route would produce the same result without the flag. The check runs in a subshell
   that removes its containers on exit, so an interrupt, a kill or a dropped SSH session leaves
   nothing restarting (measured in bash). Only `kill -9` gets past the cleanup; then
@@ -67,8 +68,10 @@ with `docker exec <container> kill -HUP 1` instead.**
   `docker kill -s`, `docker kill --signal`, `docker container kill` and `docker compose kill`.
   Change only the calls meant to leave the container running, such as a reload, to
   `docker exec <container> kill -<SIGNAL> 1`. That form needs a `kill` binary in the image, and
-  it reaches the service only when the service is PID 1. If PID 1 is an init or a wrapper
-  script (`docker exec <container> cat /proc/1/cmdline | tr '\0' ' '` shows which), signal the
+  it reaches the service only when PID 1 is the service or an init that passes signals on.
+  Docker's own `--init` does: measured, a `HUP` sent to it reached the service. A wrapper
+  script usually does not. `docker exec <container> cat /proc/1/comm` names PID 1 without
+  printing its arguments, which can hold a credential. If PID 1 is a wrapper, signal the
   service's own PID instead. Either way, confirm the reload where it lands, for example in the
   service's log or its reported configuration, rather than trusting the exit code. A
   call that is meant to stop the container should stay as it is, because the `exec` form lets

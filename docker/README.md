@@ -5,7 +5,7 @@ Containers on a small home server, started by Docker Compose with a restart poli
 ## A signal sent with docker kill stops the restart policy
 
 **`docker kill --signal=<any>` marks the container as stopped by hand, so `unless-stopped`
-does not start it again after it next exits, including at the next daemon start or reboot;
+does not start it again after it next exits, including after a reboot;
 send a reload signal from inside with `docker exec <container> kill -HUP 1` instead.**
 
 - **Failure (2026-10):** the metrics server stayed down after two reboots in a row while every
@@ -20,8 +20,9 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   effect, so it restarts normally after its next exit. Measured separately, against a control
   container: on a container still running after such a kill, `docker start` exits 0 and clears
   nothing, while `docker restart` clears it. From the engine source and not measured
-  here: the effect is the container's `HasBeenManuallyStopped` flag, it is not set while the
-  daemon itself is shutting down, and it is kept in the container's `config.v2.json` under the
+  here: the effect is the container's `HasBeenManuallyStopped` flag, a daemon restart without a
+  reboot skips the container the same way, the flag is not set while the daemon itself is
+  shutting down, and it is kept in the container's `config.v2.json` under the
   daemon's data root. Measured: `docker inspect` does not show it, and on a rootful install
   the data root (`/var/lib/docker`) is readable only by root. Rootless Docker keeps it under
   the user's own home.
@@ -35,9 +36,11 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   That route would produce the same result without the flag. The check runs in a subshell
   that removes its containers on exit and says so if any are left, so an interrupt, a kill or
   a dropped SSH session leaves nothing restarting. Run it in bash, where all of this was
-  measured. The run prints its name prefix first. Only `kill -9`
-  gets past the cleanup; then `docker rm -f <prefix>-kill <prefix>-always <prefix>-exec
-  <prefix>-control` removes what is left.
+  measured. The run prints its name prefix first. `kill -9`, a reboot or a power loss gets
+  past the cleanup, and the restart policies then keep the containers cycling. Remove them with
+  `docker rm -f <prefix>-kill <prefix>-always <prefix>-exec <prefix>-control`. If the prefix is
+  lost, `docker ps -a --filter name=hupcheck-` lists every run's containers. Remove those while
+  no other run of the check is in progress.
 
   ```sh
   (

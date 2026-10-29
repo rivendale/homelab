@@ -21,19 +21,20 @@ with `docker exec <container> kill -HUP 1` instead.**
   `config.v2.json` under its data root, which only root can read, and `docker start` clears it.
   That file location comes from the engine source and was not checked on disk.
 - **Check:** the flag also blocks restarts while the daemon is running, so you can test it
-  without a reboot. Each container below ignores `HUP` and exits after four seconds.
+  without a reboot. Each container below ignores `HUP` and exits after twenty seconds.
   `--stop-signal TERM` matters: when the signal you send is the container's stop signal, which
   it is for any signal on an image that declares none, the kill also cancels restarts by a
   second route. That route would produce the same result without the flag.
 
   ```sh
   run() { docker run -d --name "$1" --restart "$2" --stop-signal TERM --network none \
-    alpine:3.22 sh -c 'trap "" HUP; sleep 4; exit 1' >/dev/null; }
+    alpine:3.22 sh -c 'trap "" HUP; sleep 20; exit 1' >/dev/null; }
   run t-kill unless-stopped; run t-always always; run t-exec unless-stopped
   run t-control unless-stopped
-  docker kill --signal=HUP t-kill >/dev/null
-  docker kill --signal=HUP t-always >/dev/null
-  docker exec t-exec kill -HUP 1
+  docker kill --signal=HUP t-kill >/dev/null && docker kill --signal=HUP t-always >/dev/null \
+    && docker exec t-exec kill -HUP 1 \
+    && [ "$(docker inspect -f '{{.RestartCount}}' t-kill t-always t-exec | sort -u)" = 0 ] \
+    || echo 'A signal missed the first run of its container. This run proves nothing.'
   timeout 60 sh -c 'until [ "$(docker inspect -f "{{.RestartCount}}" t-always t-exec t-control \
     | sort -n | head -1)" -ge 1 ]; do sleep 1; done'
   for c in t-kill t-always t-exec t-control; do
@@ -45,7 +46,8 @@ with `docker exec <container> kill -HUP 1` instead.**
   Measured output: `t-kill` reads `exited restarts=0`. The other three read `restarting` or
   `running`, depending on where the cycle is, with a restart count above zero. `t-always` got
   the same signal as `t-kill`, so the difference is the flag and not the signal. If `t-control`
-  reads `restarts=0`, the wait timed out and the run proves nothing.
+  reads `restarts=0`, the wait timed out and the run proves nothing. The same is true if the
+  run printed the line saying a signal missed.
 - **Recovery:** `docker start <container>` clears the flag. Search your runbooks and scripts for
   `docker kill -s`, `docker kill --signal`, `docker container kill` and `docker compose kill`.
   Change only the calls meant to leave the container running, such as a reload, to

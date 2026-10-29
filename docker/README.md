@@ -30,13 +30,15 @@ with `docker exec <container> kill -HUP 1` instead.**
   signal you send is its stop signal, the kill also cancels restarts by a second route. Measured:
   with no stop signal set, a `HUP` from `docker kill` kept even an `always` container down.
   That route would produce the same result without the flag. The check runs in a subshell
-  that removes its containers on exit, so interrupting it leaves nothing restarting.
+  that removes its containers on exit, so an interrupt, a kill or a dropped SSH session leaves
+  nothing restarting (measured in bash). Only `kill -9` gets past the cleanup; then
+  `docker ps -aq --filter name=hupcheck- | xargs -r docker rm -f` removes what is left.
 
   ```sh
   (
   p="hupcheck-$$"   # unique names, so the cleanup cannot touch a container of yours
   trap 'docker rm -f "$p-kill" "$p-always" "$p-exec" "$p-control" >/dev/null 2>&1' EXIT
-  trap 'exit 130' INT TERM
+  trap 'exit 130' INT TERM HUP
   run() { docker run -d --name "$p-$1" --restart "$2" --stop-signal TERM --network none \
     alpine:3.22 sh -c 'trap "" HUP; sleep 20; exit 1' >/dev/null; }
   run kill unless-stopped; run always always; run exec unless-stopped; run control unless-stopped
@@ -64,7 +66,11 @@ with `docker exec <container> kill -HUP 1` instead.**
 - **Recovery:** `docker start <container>` clears the flag. Search your runbooks and scripts for
   `docker kill -s`, `docker kill --signal`, `docker container kill` and `docker compose kill`.
   Change only the calls meant to leave the container running, such as a reload, to
-  `docker exec <container> kill -<SIGNAL> 1`. That form needs a `kill` binary in the image. A
+  `docker exec <container> kill -<SIGNAL> 1`. That form needs a `kill` binary in the image, and
+  it reaches the service only when the service is PID 1. If PID 1 is an init or a wrapper
+  script (`docker exec <container> cat /proc/1/cmdline | tr '\0' ' '` shows which), signal the
+  service's own PID instead. Either way, confirm the reload where it lands, for example in the
+  service's log or its reported configuration, rather than trusting the exit code. A
   call that is meant to stop the container should stay as it is, because the `exec` form lets
   `unless-stopped` start it again. A server with an HTTP reload endpoint, such as Prometheus
   with `--web.enable-lifecycle`, can use that instead. After any reboot, list exited containers

@@ -95,9 +95,9 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   whose restart policy should have brought them back:
 
   ```sh
-  if ids=$(docker ps -aq --filter status=exited); then
-    printf '%s\n' "$ids" | xargs -r docker inspect --format '{{.Name}} {{.HostConfig.RestartPolicy.Name}}' \
-      | awk '$2 == "unless-stopped" || $2 == "always"'
+  if ids=$(docker ps -aq --filter status=exited) && out=$(printf '%s\n' "$ids" \
+      | xargs -r docker inspect --format '{{.Name}} {{.HostConfig.RestartPolicy.Name}}'); then
+    printf '%s\n' "$out" | awk '$2 == "unless-stopped" || $2 == "always"'
   else
     echo 'Could not query Docker, so an empty list here proves nothing.' >&2; false
   fi

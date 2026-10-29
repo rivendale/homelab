@@ -59,13 +59,14 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
     && [ "$(docker inspect -f '{{.RestartCount}}' "$p-kill" "$p-always" "$p-exec" | sort -u)" = 0 ] \
     || echo 'A signal missed the first run of its container. This run proves nothing.'
   waitfor() { for _ in $(seq 60); do [ "$(docker inspect -f '{{.RestartCount}}' "$@" \
-    | sort -n | head -1)" -ge 1 ] && return; sleep 1; done; }
+    | sort -n | head -1)" -ge 1 ] && return; sleep 1; done; return 1; }
   waitfor "$p-always" "$p-exec" "$p-control"
   for c in kill always exec control; do
     docker inspect "$p-$c" --format "$c {{.State.Status}} restarts={{.RestartCount}}"
   done
-  docker start "$p-kill" >/dev/null && waitfor "$p-kill"
-  docker inspect "$p-kill" --format 'kill after docker start: restarts={{.RestartCount}}'
+  docker start "$p-kill" >/dev/null && waitfor "$p-kill" \
+    && docker inspect "$p-kill" --format 'kill after docker start: restarts={{.RestartCount}}' \
+    || echo 'The docker start step did not finish. It proves nothing.'
   )
   ```
 

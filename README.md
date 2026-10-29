@@ -34,6 +34,7 @@ they lie to you.
 | [networking/](networking/README.md) | Tailscale tags and ACLs, the two SSH doors, DHCP reservations and statics, names versus addresses, testing DNS |
 | [sync-and-backup/](sync-and-backup/README.md) | Syncthing versioning, whitespace config values, live versus readable config, Windows service accounts, keeping evidence durable |
 | [alerting/](alerting/README.md) | ntfy's 4 KB limit, label matchers, suppression, watchdogs that die with their host, volatile signals |
+| [docker/](docker/README.md) | `docker kill --signal` switching off `unless-stopped` |
 | [windows/](windows/README.md) | detecting a pending reboot, EFS encryption that ACL tools cannot see, encrypted directories |
 | [traps.md](traps.md) | one-line index of every entry |
 

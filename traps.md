@@ -66,6 +66,10 @@ to check. Rules that live in a sibling repo are linked there.
 - [One sample of a volatile signal is not evidence](alerting/README.md#one-sample-of-a-volatile-signal-is-not-evidence)
 - [A textfile metric can be stale](alerting/README.md#a-textfile-metric-can-be-stale)
 
+## [Docker](docker/README.md)
+
+- [A signal sent with docker kill stops the restart policy](docker/README.md#a-signal-sent-with-docker-kill-stops-the-restart-policy)
+
 ## [Linux packages](packages/README.md)
 
 - [A release upgrade can silently switch off every third-party source](packages/README.md#a-release-upgrade-can-silently-switch-off-every-third-party-source)

@@ -17,8 +17,9 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
 - **Measured on:** Docker Engine 29.9.2 with `live-restore` on, 2026-10. Measured with the check
   below: a signal sent with `docker kill` keeps an `unless-stopped` container down after it
   exits, `always` restarts it anyway, and `docker start` on the stopped container clears the
-  effect, so it restarts normally after its next exit. On a container still running after such
-  a kill, `docker start` exits 0 and clears nothing, while `docker restart` clears it. From the engine source and not measured
+  effect, so it restarts normally after its next exit. Measured separately, against a control
+  container: on a container still running after such a kill, `docker start` exits 0 and clears
+  nothing, while `docker restart` clears it. From the engine source and not measured
   here: the effect is the container's `HasBeenManuallyStopped` flag, it is not set while the
   daemon itself is shutting down, and it is kept in the container's `config.v2.json` under the
   daemon's data root. Measured: `docker inspect` does not show it, and on a rootful install
@@ -41,8 +42,8 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   (
   p="hupcheck-$(mktemp -u XXXXXXXX)"   # unique per run: cleanup touches only these four
   echo "prefix $p"
-  trap 'docker rm -f "$p-kill" "$p-always" "$p-exec" "$p-control" >/dev/null \
-    || echo "Cleanup failed: remove the $p containers by hand." >&2' EXIT
+  trap 'ids=$(docker ps -aq --filter "name=^$p-"); [ -z "$ids" ] \
+    || docker rm -f $ids >/dev/null || echo "Cleanup failed: remove the $p containers." >&2' EXIT
   trap 'exit 130' INT TERM HUP
   run() { docker run -d --name "$p-$1" --restart "$2" --stop-signal TERM --network none \
     alpine:3.22 sh -c 'trap "" HUP; sleep 20; exit 1' >/dev/null; }

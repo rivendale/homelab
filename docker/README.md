@@ -33,8 +33,9 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   Measured for both: a `HUP` from `docker kill` kept even an `always` container down, with no
   stop signal set and with `--stop-signal HUP`.
   That route would produce the same result without the flag. The check runs in a subshell
-  that removes its containers on exit, so an interrupt, a kill or a dropped SSH session leaves
-  nothing restarting (measured in bash). The run prints its name prefix first. Only `kill -9`
+  that removes its containers on exit and says so if any are left, so an interrupt, a kill or
+  a dropped SSH session leaves nothing restarting. Run it in bash, where all of this was
+  measured. The run prints its name prefix first. Only `kill -9`
   gets past the cleanup; then `docker rm -f <prefix>-kill <prefix>-always <prefix>-exec
   <prefix>-control` removes what is left.
 
@@ -42,8 +43,9 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   (
   p="hupcheck-$(mktemp -u XXXXXXXX)"   # unique per run: cleanup touches only these four
   echo "prefix $p"
-  trap 'ids=$(docker ps -aq --filter "name=^$p-"); [ -z "$ids" ] \
-    || docker rm -f $ids >/dev/null || echo "Cleanup failed: remove the $p containers." >&2' EXIT
+  trap 'for c in kill always exec control; do docker rm -f "$p-$c" >/dev/null 2>&1; done
+    left=$(docker ps -aq --filter "name=^/?$p-") && [ -z "$left" ] \
+      || echo "Cleanup failed: remove the $p containers." >&2' EXIT
   trap 'exit 130' INT TERM HUP
   run() { docker run -d --name "$p-$1" --restart "$2" --stop-signal TERM --network none \
     alpine:3.22 sh -c 'trap "" HUP; sleep 20; exit 1' >/dev/null; }

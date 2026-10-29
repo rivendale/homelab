@@ -60,7 +60,8 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
     || echo 'A signal missed the first run of its container. This run proves nothing.'
   waitfor() { for _ in $(seq 60); do [ "$(docker inspect -f '{{.RestartCount}}' "$@" \
     | sort -n | head -1)" -ge 1 ] && return; sleep 1; done; return 1; }
-  waitfor "$p-always" "$p-exec" "$p-control"
+  waitfor "$p-always" "$p-exec" "$p-control" \
+    || echo 'The wait for the first restarts timed out. This run proves nothing.'
   for c in kill always exec control; do
     docker inspect "$p-$c" --format "$c {{.State.Status}} restarts={{.RestartCount}}"
   done
@@ -74,8 +75,8 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   `running`, depending on where the cycle is, with a restart count above zero. `always` got the
   same signal as `kill`, so the difference is the flag and not the signal. The last line reads
   `kill after docker start: restarts=1`: after a `docker start`, the container restarts
-  normally again. If `control` reads `restarts=0`, the wait timed out and the run proves
-  nothing. The same is true if the run printed the line saying a signal missed.
+  normally again. The run proves nothing if it printed a line saying a signal missed or a
+  wait timed out.
 - **Recovery:** on a stopped container, `docker start <container>` clears the flag. On one
   still running after such a kill, `docker start` exits 0 and changes nothing; use
   `docker restart <container>`, which clears it. Search your runbooks and scripts for

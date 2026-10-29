@@ -92,7 +92,7 @@ send a reload signal from inside with `docker exec <container> kill -HUP 1` inst
   call that is meant to stop the container should stay as it is, because the `exec` form lets
   `unless-stopped` start it again. A server with an HTTP reload endpoint, such as Prometheus
   with `--web.enable-lifecycle`, can use that instead. After any reboot, list exited containers
-  whose restart policy should have brought them back:
+  set to `unless-stopped` or `always`:
 
   ```sh
   if ids=$(docker ps -aq --filter status=exited) && out=$(printf '%s\n' "$ids" \
